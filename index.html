@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TALENTMATCH - Intelligent Resume & Job Matching Platform</title>
+  <meta name="description" content="AI Resume & Job Matching System for hackathon demonstration. Rank candidates, compute transparent match scores, truth/confidence evidence scores, and explainable recommendations.">
+  
+  <!-- Inter Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Application CSS -->
+  <link rel="stylesheet" href="css/styles.css">
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <!-- PDF.js & Mammoth.js for Client-Side Document Parsing -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+  
+  <!-- Chart.js for Analytics -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body>
+  <div class="app-container">
+    
+    <!-- Top Navigation Navbar -->
+    <header class="navbar">
+      <a href="#" class="brand" onclick="window.location.reload();">
+        <div class="brand-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" fill="white" font-family="Inter, sans-serif" font-weight="900" font-size="11" letter-spacing="-0.5px">TM</text>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <span class="brand-title">TALENTMATCH</span>
+          <span class="brand-subtitle">Intelligent Resume & Job Matching Platform</span>
+        </div>
+      </a>
+
+      <nav>
+        <ul class="nav-links">
+          <li><a href="#" class="nav-item active" data-tab="screen"><i data-lucide="layout-dashboard" style="width: 16px; height: 16px;"></i> Dashboard</a></li>
+          <li><a href="#" class="nav-item" data-tab="candidates"><i data-lucide="users" style="width: 16px; height: 16px;"></i> Candidates</a></li>
+          <li><a href="#" class="nav-item" data-tab="analytics"><i data-lucide="bar-chart-3" style="width: 16px; height: 16px;"></i> Analytics</a></li>
+          <li><a href="#" class="nav-item" data-tab="about"><i data-lucide="info" style="width: 16px; height: 16px;"></i> About</a></li>
+        </ul>
+      </nav>
+
+      <div class="nav-actions">
+        <button id="btn-load-demo" class="btn btn-secondary btn-sm" title="Load sample Job Description and 5 demo candidates for hackathon demo">
+          <i data-lucide="play-circle" style="width: 16px; height: 16px; color: var(--primary);"></i>
+          Load Demo Data
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="main-layout">
+      
+      <!-- ==================== VIEW 1: SCREENING DASHBOARD ==================== -->
+      <div id="view-screening">
+        
+        <!-- Hero Section -->
+        <section class="hero-section">
+          <div class="badge-pill">
+            <i data-lucide="briefcase" style="width:14px;height:14px;"></i> Hackathon Prototype • Resume & Job Matching
+          </div>
+          <h1 class="hero-title">Intelligent Resume & <span>Job Matching</span> Platform</h1>
+          <p class="hero-subtitle">Analyze resumes, rank candidates by transparent fit, and understand why they match — all powered by explainable NLP scoring.</p>
+          
+          <div class="hero-buttons">
+            <button id="btn-start-screening" class="btn btn-primary btn-lg">
+              <i data-lucide="arrow-right-circle" style="width: 18px; height: 18px;"></i>
+              Start Screening
+            </button>
+            <button onclick="document.getElementById('btn-load-demo').click();" class="btn btn-secondary btn-lg">
+              <i data-lucide="eye" style="width: 18px; height: 18px;"></i>
+              View Live Demo
+            </button>
+          </div>
+
+          <div class="features-grid">
+            <div class="feature-card">
+              <div class="feature-icon"><i data-lucide="file-search" style="width:20px;height:20px;"></i></div>
+              <h4>Smart Resume Parsing</h4>
+              <p>Extracts skills, experience timeline, education, and projects from PDF, DOCX, and TXT files.</p>
+            </div>
+
+            <div class="feature-card">
+              <div class="feature-icon"><i data-lucide="sliders" style="width:20px;height:20px;"></i></div>
+              <h4>Explainable Score (0–100)</h4>
+              <p>Transparent composite score derived from Skill (40%), Experience (25%), Education (10%), and NLP (25%).</p>
+            </div>
+
+            <div class="feature-card">
+              <div class="feature-icon"><i data-lucide="shield-check" style="width:20px;height:20px;"></i></div>
+              <h4>Truth / Confidence Score</h4>
+              <p>Analyzes internal document evidence consistency and highlights claims needing review.</p>
+            </div>
+
+            <div class="feature-card">
+              <div class="feature-icon"><i data-lucide="award" style="width:20px;height:20px;"></i></div>
+              <h4>Automated Candidate Ranking</h4>
+              <p>Ranks candidates instantly from highest match to lowest with actionable recommendation badges.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Stepper Workflow Header -->
+        <section class="stepper-container" id="screening-section">
+          <div class="step-item active" data-step="1">
+            <div class="step-number">1</div>
+            <div class="step-text">
+              <span class="step-label">STEP 1</span>
+              <span class="step-title">Job Description</span>
+            </div>
+          </div>
+          
+          <div class="step-divider"></div>
+
+          <div class="step-item" data-step="2">
+            <div class="step-number">2</div>
+            <div class="step-text">
+              <span class="step-label">STEP 2</span>
+              <span class="step-title">Upload Resumes</span>
+            </div>
+          </div>
+
+          <div class="step-divider"></div>
+
+          <div class="step-item" data-step="3">
+            <div class="step-number">3</div>
+            <div class="step-text">
+              <span class="step-label">STEP 3</span>
+              <span class="step-title">Analyze Candidates</span>
+            </div>
+          </div>
+
+          <div class="step-divider"></div>
+
+          <div class="step-item" data-step="4">
+            <div class="step-number">4</div>
+            <div class="step-text">
+              <span class="step-label">STEP 4</span>
+              <span class="step-title">Ranked Results</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- Screening Input Grid (Step 1 & 2) -->
+        <div class="screening-grid">
+          
+          <!-- STEP 1: Job Description Input Panel -->
+          <div class="panel-card">
+            <div class="panel-header">
+              <div class="panel-title-group">
+                <i data-lucide="briefcase" style="width: 20px; height: 20px; color: var(--primary);"></i>
+                <h3 class="panel-title">1. Job Description</h3>
+              </div>
+              <button id="btn-sample-jd" class="btn btn-secondary btn-sm" title="Load sample Job Description for Senior Software Engineer">
+                <i data-lucide="file-text" style="width: 14px; height: 14px; color: var(--primary);"></i> Load Sample JD
+              </button>
+            </div>
+
+            <div class="form-group">
+              <label for="jd-textarea" class="form-label">Paste Job Description</label>
+              <div class="form-sublabel">Include job title, required skills, preferred skills, education, and experience requirements.</div>
+              <textarea id="jd-textarea" class="form-textarea" placeholder="Paste target job description here... (e.g. Senior Full-Stack Engineer, required skills: Python, React, PostgreSQL...)"></textarea>
+            </div>
+
+            <!-- Auto Detected Requirements Preview Box -->
+            <div id="jd-requirements-preview">
+              <span class="req-tag">Enter job description to auto-parse requirements</span>
+            </div>
+          </div>
+
+          <!-- STEP 2: Resume Upload Panel -->
+          <div class="panel-card">
+            <div class="panel-header">
+              <div class="panel-title-group">
+                <i data-lucide="file-text" style="width: 20px; height: 20px; color: var(--primary);"></i>
+                <h3 class="panel-title">2. Upload Resumes</h3>
+              </div>
+              <button id="btn-demo-resumes" class="btn btn-secondary btn-sm" title="Add 5 sample candidate resumes to test pipeline">
+                <i data-lucide="users" style="width: 14px; height: 14px; color: var(--primary);"></i> Use Sample Resumes
+              </button>
+            </div>
+
+            <!-- Drag & Drop Zone -->
+            <div class="dropzone" id="resume-dropzone">
+              <div class="dropzone-icon">
+                <i data-lucide="upload-cloud" style="width: 24px; height: 24px;"></i>
+              </div>
+              <div class="dropzone-text">Drag & drop candidate resumes here</div>
+              <div class="dropzone-subtext">Supports PDF, DOCX, and TXT files (Max 10MB per file)</div>
+              
+              <div style="margin-top: 1rem;">
+                <button id="btn-browse-files" class="btn btn-secondary btn-sm">
+                  <i data-lucide="folder" style="width: 14px; height: 14px;"></i> Browse Files
+                </button>
+                <input type="file" id="file-input-hidden" multiple accept=".pdf,.docx,.txt" style="display: none;">
+              </div>
+            </div>
+
+            <!-- Uploaded Files List -->
+            <div class="form-label" style="display:flex; justify-content:space-between; align-items:center;">
+              <span>Uploaded Resumes</span>
+              <span class="panel-badge">PDF / DOCX / TXT</span>
+            </div>
+
+            <div class="file-list" id="uploaded-files-container">
+              <div style="color: var(--text-muted); font-size: 0.85rem; text-align: center; padding: 1rem;">
+                No resumes uploaded yet. Click "Browse Files" or "Use Sample Resumes".
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Banner (Step 3 Trigger) -->
+        <div class="action-banner">
+          <div class="action-status-text" id="action-status-note">
+            <i data-lucide="info" style="width:18px;height:18px;color:var(--info);"></i>
+            Enter a Job Description and upload at least 1 resume to enable analysis.
+          </div>
+
+          <button id="btn-analyze-candidates" class="btn btn-primary btn-lg" disabled>
+            <i data-lucide="cpu" style="width: 20px; height: 20px;"></i>
+            Analyze Candidates
+          </button>
+        </div>
+
+        <!-- STEP 3: Loading Animation Overlay -->
+        <div id="loading-overlay" class="loading-overlay" style="display: none;">
+          <div class="spinner"></div>
+          <h3 style="font-size:1.25rem; font-weight:700;">Analyzing Resumes & Matching Candidates...</h3>
+          <p style="color:var(--text-muted); font-size:0.9rem;">Extracting candidate skills, calculating weighted match scores, and auditing evidence consistency.</p>
+        </div>
+
+        <!-- STEP 4: Results Dashboard Area -->
+        <div id="results-dashboard-container" style="display: none;">
+          
+          <!-- Summary KPI Stat Cards -->
+          <div class="kpi-grid">
+            <div class="kpi-card">
+              <div class="kpi-data">
+                <span class="kpi-title">TOTAL CANDIDATES</span>
+                <span class="kpi-value" id="kpi-total-candidates">0</span>
+                <span class="kpi-subtext">Resumes processed</span>
+              </div>
+              <div class="kpi-icon blue"><i data-lucide="users" style="width:22px;height:22px;"></i></div>
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-data">
+                <span class="kpi-title">AVG MATCH SCORE</span>
+                <span class="kpi-value" id="kpi-avg-score">0%</span>
+                <span class="kpi-subtext">Across all candidates</span>
+              </div>
+              <div class="kpi-icon purple"><i data-lucide="target" style="width:22px;height:22px;"></i></div>
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-data">
+                <span class="kpi-title">TOP CANDIDATE</span>
+                <span class="kpi-value" id="kpi-top-candidate" style="font-size:1.35rem;">N/A</span>
+                <span class="kpi-subtext">Highest match score</span>
+              </div>
+              <div class="kpi-icon green"><i data-lucide="trophy" style="width:22px;height:22px;"></i></div>
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-data">
+                <span class="kpi-title">RECOMMENDED</span>
+                <span class="kpi-value" id="kpi-rec-count">0</span>
+                <span class="kpi-subtext">Strong & Recommended</span>
+              </div>
+              <div class="kpi-icon amber"><i data-lucide="thumbs-up" style="width:22px;height:22px;"></i></div>
+            </div>
+          </div>
+
+          <!-- Search, Filters & Sorting Toolbar -->
+          <div class="toolbar-card">
+            <div class="search-input-group">
+              <i data-lucide="search" style="width: 16px; height: 16px; color: var(--text-muted);"></i>
+              <input type="text" id="input-search-candidate" placeholder="Search candidate by name...">
+            </div>
+
+            <div class="filter-controls">
+              <select id="select-filter-score" class="select-input">
+                <option value="0">All Match Scores</option>
+                <option value="90">Min 90% Match</option>
+                <option value="75">Min 75% Match</option>
+                <option value="60">Min 60% Match</option>
+              </select>
+
+              <select id="select-filter-rec" class="select-input">
+                <option value="all">All Recommendations</option>
+                <option value="strongly-recommended">Strongly Recommended</option>
+                <option value="recommended">Recommended</option>
+                <option value="consider">Consider</option>
+                <option value="not-recommended">Not Recommended</option>
+              </select>
+
+              <select id="select-filter-skill" class="select-input">
+                <option value="all">All Skills</option>
+              </select>
+
+              <select id="select-sort" class="select-input">
+                <option value="score-desc">Highest Match Score</option>
+                <option value="score-asc">Lowest Match Score</option>
+                <option value="truth-desc">Highest Truth/Confidence</option>
+                <option value="name-asc">Candidate Name (A-Z)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Ranked Candidate Table -->
+          <div class="table-card">
+            <table class="candidate-table">
+              <thead>
+                <tr>
+                  <th style="width: 70px;">Rank</th>
+                  <th>Candidate</th>
+                  <th style="width: 140px;">Match Score</th>
+                  <th style="width: 160px;">Truth / Confidence</th>
+                  <th style="width: 200px;">Recommendation</th>
+                  <th>Top Matched Skills</th>
+                </tr>
+              </thead>
+              <tbody id="candidate-table-body">
+                <!-- Populated dynamically by JS -->
+              </tbody>
+            </table>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- ==================== VIEW 2: CANDIDATES DIRECTORY ==================== -->
+      <div id="view-candidates" style="display: none;">
+        <div style="margin-bottom: 1.5rem;">
+          <h2 style="font-size: 1.75rem; font-weight: 800;">Candidate Directory</h2>
+          <p style="color: var(--text-muted); font-size: 0.9rem;">Browse and review full profile details for all analyzed candidate resumes.</p>
+        </div>
+
+        <div id="candidates-directory-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 1.5rem;">
+          <div style="color: var(--text-muted); text-align: center; padding: 3rem; grid-column: 1 / -1;">
+            No candidate data available yet. Please run candidate analysis first on the Dashboard.
+          </div>
+        </div>
+      </div>
+
+      <!-- ==================== VIEW 3: ANALYTICS ==================== -->
+      <div id="view-analytics" style="display: none;">
+        <div style="margin-bottom: 1.5rem;">
+          <h2 style="font-size: 1.75rem; font-weight: 800;">Candidate Analytics & Insights</h2>
+          <p style="color: var(--text-muted); font-size: 0.9rem;">Visual analytics computed directly from current analyzed candidate datasets.</p>
+        </div>
+
+        <div class="analytics-grid">
+          <div class="chart-card">
+            <h3 class="chart-title">Candidate Match & Truth Score Distribution</h3>
+            <div class="chart-container">
+              <canvas id="chart-score-dist"></canvas>
+            </div>
+          </div>
+
+          <div class="chart-card">
+            <h3 class="chart-title">Recommendation Tier Breakdown</h3>
+            <div class="chart-container">
+              <canvas id="chart-rec-breakdown"></canvas>
+            </div>
+          </div>
+
+          <div class="chart-card" style="grid-column: 1 / -1;">
+            <h3 class="chart-title">Top Missing Skills Across Candidates (Skill Gaps)</h3>
+            <div class="chart-container">
+              <canvas id="chart-missing-skills"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==================== VIEW 4: ABOUT ==================== -->
+      <div id="view-about" style="display: none;">
+        <div class="panel-card" style="max-width: 900px; margin: 0 auto;">
+          <div class="panel-header">
+            <h2 class="panel-title" style="font-size: 1.5rem;">About TALENTMATCH</h2>
+            <span class="badge-pill">Hackathon Prototype</span>
+          </div>
+
+          <div style="line-height: 1.7; color: var(--text-secondary); font-size: 0.95rem;">
+            <p style="margin-bottom: 1.25rem;">
+              <strong>TALENTMATCH</strong> is an intelligent resume and job description matching system designed to help recruiters process large volumes of candidate applications quickly, objectively, and transparently.
+            </p>
+
+            <h4 style="color: var(--text-primary); margin: 1.25rem 0 0.5rem 0; font-size: 1.1rem;">Core Problem & Solution</h4>
+            <p>
+              Recruiters often spend hours skimming resumes, leading to keyword-matching bias and overlooked talent. TALENTMATCH replaces static keyword matching with a 4-factor NLP scoring engine and evidence consistency auditing.
+            </p>
+
+            <h4 style="color: var(--text-primary); margin: 1.25rem 0 0.5rem 0; font-size: 1.1rem;">Key Features</h4>
+            <ul style="margin-left: 1.5rem; margin-bottom: 1.25rem;">
+              <li><strong>Transparent Match Score (0–100%)</strong>: Calculated as Skill Match (40%), Experience (25%), Education (10%), and Semantic NLP relevance (25%).</li>
+              <li><strong>Truth / Confidence Score (0–100%)</strong>: Audits internal document evidence consistency without labeling candidates negatively.</li>
+              <li><strong>Explainable Recommendations</strong>: Automatically classifies candidates into <em>Strongly Recommended</em>, <em>Recommended</em>, <em>Consider</em>, or <em>Not Recommended</em> with clear rationales.</li>
+              <li><strong>Skill Gap Identification</strong>: Visually highlights matched required skills, missing required skills, and additional skills.</li>
+              <li><strong>Zero-Dependency Local Engine</strong>: Parses PDF, DOCX, and TXT files directly in-browser with zero paid API dependencies.</li>
+            </ul>
+
+            <h4 style="color: var(--text-primary); margin: 1.25rem 0 0.5rem 0; font-size: 1.1rem;">Privacy & Demonstration Note</h4>
+            <p style="background: var(--bg-hover); padding: 1rem; border-radius: var(--radius-md); font-size: 0.875rem;">
+              Uploaded resume data is processed for candidate analysis in this hackathon prototype. Avoid uploading sensitive personal information during public demonstrations.
+            </p>
+          </div>
+        </div>
+      </div>
+
+    </main>
+
+    <!-- Candidate Detailed Inspector Modal -->
+    <div id="candidate-modal" class="modal-overlay" style="display: none;">
+      <div class="modal-container">
+        <div class="modal-header">
+          <div style="display:flex; align-items:center; gap:0.5rem;">
+            <i data-lucide="user-check" style="width:20px;height:20px;color:var(--primary);"></i>
+            <span style="font-weight:700; font-size:1.1rem;">Candidate Detailed Inspector</span>
+          </div>
+          <button id="modal-close-btn" class="modal-close-btn">
+            <i data-lucide="x" style="width:20px;height:20px;"></i>
+          </button>
+        </div>
+        <div class="modal-body" id="modal-candidate-content">
+          <!-- Populated dynamically by JS -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast Notification Banners -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <p>TALENTMATCH — Intelligent Resume & Job Matching Platform • Hackathon Prototype</p>
+    </footer>
+
+  </div>
+
+  <!-- Application Script Controller -->
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
